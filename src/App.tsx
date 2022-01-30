@@ -9,10 +9,12 @@ export default function App() {
   }, []);
 
   const [ memoContainer, setMemoContainer ] = useStorage('memoContainer', '{}');
+  const [ selectedKey, setSelectedKey ] = useState(-1);
 
   return (<>
-    <Controller memoContainer={memoContainer} setMemoContainer={setMemoContainer} />
-    <Memo memoContainer={memoContainer} />
+    <Controller memoContainer={memoContainer} setMemoContainer={setMemoContainer}
+      selectedKey={selectedKey} setSelectedKey={setSelectedKey} />
+    <Memo memoContainer={memoContainer} setSelectedKey={setSelectedKey} />
   </>);
 }
 
