@@ -1,11 +1,10 @@
 import React, { useRef, useState } from 'react';
 
-
-export default function Controller(
-  props: {
-    setShouldUpdateMemo: React.Dispatch<React.SetStateAction<boolean>>
-  })
-{
+interface ControllerProp {
+  memoContainer: string,
+  setMemoContainer: React.Dispatch<React.SetStateAction<string>>,
+};
+export default function Controller({ memoContainer, setMemoContainer, }: ControllerProp) {
   const [ creating, setCreating ] = useState(false);
   const [ id, setId ] = useState(0);
 
@@ -26,19 +25,19 @@ export default function Controller(
     <button>Delete</button>
     {creating
       ? <Editor id={id} nextId={id + 1} setId={setId} setEditing={setCreating}
-      setShouldUpdateMemo={props.setShouldUpdateMemo} />
+          memoContainer={memoContainer} setMemoContainer={setMemoContainer} />
       : <></>}
   </>);
 }
 
-function Editor(
-  props: {
-    id: number, nextId?: number | undefined,
-    setId: React.Dispatch<React.SetStateAction<number>>,
-    setEditing: React.Dispatch<React.SetStateAction<boolean>>,
-    setShouldUpdateMemo: React.Dispatch<React.SetStateAction<boolean>>,
-  })
-{
+interface EditorProp {
+  id: number, nextId?: number,
+  setId: React.Dispatch<React.SetStateAction<number>>,
+  setEditing: React.Dispatch<React.SetStateAction<boolean>>,
+  memoContainer: string,
+  setMemoContainer: React.Dispatch<React.SetStateAction<string>>,
+};
+function Editor({ id, nextId, setId, setEditing, memoContainer, setMemoContainer, }: EditorProp) {
   const $title = useRef<HTMLInputElement>(null);
   const $text = useRef<HTMLTextAreaElement>(null);
 
@@ -52,12 +51,14 @@ function Editor(
       return;
     }
 
-    saveMemoToLocalStorage(props.id, title, text);
-    if(props.nextId !== undefined) {
-      props.setId(props.nextId);
+    const memoObj = JSON.parse(memoContainer);
+    memoObj[id] = { title, text };
+    setMemoContainer(JSON.stringify(memoObj));
+
+    if(nextId !== undefined) {
+      setId(nextId);
     }
-    props.setShouldUpdateMemo(true);
-    props.setEditing(false);
+    setEditing(false);
   }
 
   return (<div>
@@ -66,13 +67,6 @@ function Editor(
     <textarea name="" id="" cols={30} rows={10} ref={$text}></textarea>
     <br />
     <button onClick={() => editMemo($title.current?.value || undefined, $text.current?.value || undefined)}>Save</button>
-    <button onClick={() => props.setEditing(false)}>Close</button>
+    <button onClick={() => setEditing(false)}>Close</button>
   </div>);
-}
-
-function saveMemoToLocalStorage(id: number, title: string, text: string) {
-  const memoContainer = JSON.parse(window.localStorage.getItem('memoContainer') as string);
-  memoContainer[id.toString()] = JSON.stringify({ title, text });
-  window.localStorage.setItem('memoContainer', JSON.stringify(memoContainer));
-  console.log(window.localStorage.getItem('memoContainer'));
 }
